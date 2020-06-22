@@ -1,0 +1,142 @@
+<html>
+<head>
+<title>demo2.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #629755; font-style: italic;}
+.s3 { color: #629755; font-weight: bold; font-style: italic;}
+.s4 { color: #6a8759;}
+.s5 { color: #808080;}
+.s6 { color: #6897bb;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+demo2.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">MyByteCode</span><span class="s0">;</span>
+
+<span class="s2">/**</span>
+ <span class="s2">* </span><span class="s3">@Classname </span><span class="s2">demo2</span>
+ <span class="s2">* </span><span class="s3">@Description </span><span class="s2">TODO</span>
+ <span class="s2">* </span><span class="s3">@Date </span><span class="s2">6/11/20 02:34</span>
+ <span class="s2">* </span><span class="s3">@Created </span><span class="s2">by mcy</span>
+ <span class="s2">*/</span>
+
+<span class="s0">import </span><span class="s1">javassist.*</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">java.io.IOException</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.lang.reflect.InvocationTargetException</span><span class="s0">;</span>
+<span class="s0">import </span><span class="s1">java.lang.reflect.Method</span><span class="s0">;</span>
+
+<span class="s2">/**</span>
+ <span class="s2">* 测试javassist的api</span>
+ <span class="s2">*/</span>
+<span class="s0">public class </span><span class="s1">demo2 {</span>
+    <span class="s0">public static void </span><span class="s1">test1() </span><span class="s0">throws </span><span class="s1">NotFoundException</span><span class="s0">, </span><span class="s1">IOException</span><span class="s0">, </span><span class="s1">CannotCompileException</span><span class="s0">, </span><span class="s1">IllegalAccessException</span><span class="s0">, </span><span class="s1">InstantiationException</span><span class="s0">, </span><span class="s1">NoSuchMethodException</span><span class="s0">, </span><span class="s1">InvocationTargetException {</span>
+        <span class="s1">ClassPool pool = ClassPool.getDefault()</span><span class="s0">;</span>
+        <span class="s1">CtClass ctClass = pool.get(</span><span class="s4">&quot;MyByteCode.Employee&quot;</span><span class="s1">)</span><span class="s0">;</span>
+
+<span class="s5">//        byte[] bytes = ctClass.toBytecode();</span>
+<span class="s5">//        System.out.println(Arrays.toString(bytes));</span>
+<span class="s5">//        System.out.println(ctClass.getName());  //  获取类名</span>
+<span class="s5">//        System.out.println(ctClass.getSimpleName());</span>
+<span class="s5">//        System.out.println(ctClass.getInterfaces()); // 获取接口</span>
+
+        <span class="s5">// 测试产生新的方法</span>
+
+<span class="s5">//        CtMethod ctMethod = CtMethod.make(&quot;public int add(int a, int b) {return a+b;}&quot;, ctClass);</span>
+        <span class="s1">CtMethod ctMethod1 = </span><span class="s0">new </span><span class="s1">CtMethod(CtClass.intType</span><span class="s0">, </span><span class="s4">&quot;add&quot;</span><span class="s0">,</span>
+                <span class="s0">new </span><span class="s1">CtClass[] {CtClass.intType</span><span class="s0">, </span><span class="s1">CtClass.intType}</span><span class="s0">, </span><span class="s1">ctClass)</span><span class="s0">;</span>
+
+        <span class="s1">ctMethod1.setModifiers(Modifier.PUBLIC)</span><span class="s0">;</span>
+        <span class="s1">ctMethod1.setBody(</span><span class="s4">&quot;{return $1+$2;}&quot;</span><span class="s1">)</span><span class="s0">; </span><span class="s5">// 确定参数位置</span>
+        <span class="s1">ctClass.addMethod(ctMethod1)</span><span class="s0">;</span>
+
+        <span class="s5">// 通过反射调用新生成的方法</span>
+        <span class="s1">Class&lt;Object&gt; c = ctClass.toClass()</span><span class="s0">;</span>
+        <span class="s1">Object obj = c.newInstance()</span><span class="s0">;  </span><span class="s5">// 通过Employee的无参构造器 创建对象</span>
+        <span class="s1">Method method = c.getDeclaredMethod(</span><span class="s4">&quot;add&quot;</span><span class="s0">, int</span><span class="s1">.</span><span class="s0">class, int</span><span class="s1">.</span><span class="s0">class</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">Object result = method.invoke(obj</span><span class="s0">, </span><span class="s6">200</span><span class="s0">, </span><span class="s6">300</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">System.out.println(result)</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+    <span class="s2">/**</span>
+     <span class="s2">* 动态修改原类中的方法</span>
+     <span class="s2">* </span><span class="s3">@throws</span>
+     <span class="s2">*/</span>
+    <span class="s0">public static void </span><span class="s1">test2() </span><span class="s0">throws </span><span class="s1">Exception {</span>
+        <span class="s1">ClassPool pool = ClassPool.getDefault()</span><span class="s0">;</span>
+        <span class="s1">CtClass ctClass = pool.get(</span><span class="s4">&quot;MyByteCode.Employee&quot;</span><span class="s1">)</span><span class="s0">;</span>
+
+        <span class="s1">CtMethod ctMethod = ctClass.getDeclaredMethod(</span><span class="s4">&quot;sayHello&quot;</span><span class="s0">, new </span><span class="s1">CtClass[]{})</span><span class="s0">;</span>
+        <span class="s5">// 在方法前后添加语句</span>
+        <span class="s1">ctMethod.insertBefore(</span><span class="s4">&quot;System.out.println(</span><span class="s0">\&quot;</span><span class="s4">Yoo</span><span class="s0">\&quot;</span><span class="s4">);&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">ctMethod.insertAfter(</span><span class="s4">&quot;System.out.println(</span><span class="s0">\&quot;</span><span class="s4">emmm...</span><span class="s0">\&quot;</span><span class="s4">);&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s5">// 在指定行添加语句</span>
+        <span class="s1">ctMethod.insertAt(</span><span class="s6">44</span><span class="s0">, </span><span class="s4">&quot;System.out.println(</span><span class="s0">\&quot;</span><span class="s4">duck</span><span class="s0">\&quot;</span><span class="s4">);&quot;</span><span class="s1">)</span><span class="s0">;</span>
+
+
+        <span class="s1">Class c = ctClass.toClass()</span><span class="s0">;</span>
+        <span class="s1">Object object = c.newInstance()</span><span class="s0">;</span>
+        <span class="s1">Method method = c.getDeclaredMethod(</span><span class="s4">&quot;sayHello&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">method.invoke(object)</span><span class="s0">;;</span>
+
+
+    <span class="s1">}</span>
+
+
+    <span class="s5">// 添加属性 获取属性</span>
+    <span class="s0">public static void </span><span class="s1">test3() </span><span class="s0">throws </span><span class="s1">Exception {</span>
+
+        <span class="s1">ClassPool pool = ClassPool.getDefault()</span><span class="s0">;</span>
+        <span class="s1">CtClass ctClass = pool.get(</span><span class="s4">&quot;MyByteCode.Employee&quot;</span><span class="s1">)</span><span class="s0">;</span>
+
+        <span class="s1">CtField ctField = </span><span class="s0">new </span><span class="s1">CtField(CtClass.intType</span><span class="s0">, </span><span class="s4">&quot;salary&quot;</span><span class="s0">, </span><span class="s1">ctClass)</span><span class="s0">;</span>
+        <span class="s1">ctField.setModifiers(Modifier.PRIVATE)</span><span class="s0">;</span>
+        <span class="s1">ctClass.addField(ctField</span><span class="s0">, </span><span class="s4">&quot;10000&quot;</span><span class="s1">)</span><span class="s0">; </span><span class="s5">// 默认值</span>
+
+<span class="s5">//        ctClass.getDeclaredMethod(&quot;name&quot;); // 获取指定的属性</span>
+
+        <span class="s5">//  对添加的属性 添加对一个的set和get方法</span>
+        <span class="s1">CtMethod ctMethod = CtNewMethod.getter(</span><span class="s4">&quot;getSalary&quot;</span><span class="s0">, </span><span class="s1">ctField)</span><span class="s0">;</span>
+        <span class="s1">CtMethod ctMethod1 = CtNewMethod.setter(</span><span class="s4">&quot;setSalary&quot;</span><span class="s0">, </span><span class="s1">ctField)</span><span class="s0">;</span>
+
+        <span class="s1">ctClass.addMethod(ctMethod)</span><span class="s0">;</span>
+        <span class="s1">ctClass.addMethod(ctMethod1)</span><span class="s0">;</span>
+
+    <span class="s1">}</span>
+
+
+    <span class="s5">// 添加构造器</span>
+
+    <span class="s0">public static void </span><span class="s1">test4() </span><span class="s0">throws </span><span class="s1">Exception {</span>
+        <span class="s1">ClassPool pool = ClassPool.getDefault()</span><span class="s0">;</span>
+        <span class="s1">CtClass ctClass = pool.get(</span><span class="s4">&quot;MyByteCode.Employee&quot;</span><span class="s1">)</span><span class="s0">;</span>
+
+        <span class="s1">CtConstructor[] ctConstructors = ctClass.getConstructors()</span><span class="s0">;</span>
+        <span class="s0">for </span><span class="s1">(CtConstructor cc :</span>
+                <span class="s1">ctConstructors) {</span>
+            <span class="s1">System.out.println(cc.getLongName())</span><span class="s0">;</span>
+
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+
+    <span class="s0">public static void </span><span class="s1">main(String[] args) </span><span class="s0">throws </span><span class="s1">Exception {</span>
+<span class="s5">//        test1();</span>
+
+<span class="s5">//        test2();</span>
+
+<span class="s5">//        test3();</span>
+
+        <span class="s1">test4()</span><span class="s0">;</span>
+
+    <span class="s1">}</span>
+<span class="s1">}</span>
+</pre>
+</body>
+</html>

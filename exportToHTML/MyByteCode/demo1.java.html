@@ -1,0 +1,71 @@
+<html>
+<head>
+<title>demo1.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #629755; font-style: italic;}
+.s3 { color: #629755; font-weight: bold; font-style: italic;}
+.s4 { color: #808080;}
+.s5 { color: #6a8759;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+demo1.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">MyByteCode</span><span class="s0">;</span>
+
+<span class="s2">/**</span>
+ <span class="s2">* </span><span class="s3">@Classname </span><span class="s2">demo1</span>
+ <span class="s2">* </span><span class="s3">@Description </span><span class="s2">TODO Java动态性 实现方式： 字节码操作和反射机制</span>
+ <span class="s2">* </span><span class="s3">@Date </span><span class="s2">6/10/20 23:01</span>
+ <span class="s2">* </span><span class="s3">@Created </span><span class="s2">by mcy</span>
+ <span class="s2">*/</span>
+
+
+<span class="s0">import </span><span class="s1">javassist.*</span><span class="s0">;</span>
+
+<span class="s0">import </span><span class="s1">java.io.IOException</span><span class="s0">;</span>
+<span class="s2">/**</span>
+ <span class="s2">* 运行时操作字节码的优势 比反射开销小 性能高</span>
+ <span class="s2">*  JavaAssist库     AOP 通过字节码动态的给语句的前后增加新方法代码</span>
+ <span class="s2">*  动态创建类对象</span>
+ <span class="s2">*/</span>
+<span class="s0">public class </span><span class="s1">demo1 {</span>
+    <span class="s0">public static void </span><span class="s1">main(String[] args) </span><span class="s0">throws </span><span class="s1">NotFoundException</span><span class="s0">, </span><span class="s1">IOException</span><span class="s0">, </span><span class="s1">CannotCompileException {</span>
+
+        <span class="s4">// 获得类池 从类池中调出ctClass</span>
+        <span class="s1">ClassPool pool = ClassPool.getDefault()</span><span class="s0">;</span>
+
+        <span class="s1">CtClass ctClass = pool.makeClass(</span><span class="s5">&quot;MyByteCode.Employee&quot;</span><span class="s1">)</span><span class="s0">;</span>
+
+        <span class="s4">// 创建属性</span>
+        <span class="s1">CtField ctField = CtField.make(</span><span class="s5">&quot;private String name;&quot;</span><span class="s0">, </span><span class="s1">ctClass)</span><span class="s0">;</span>
+        <span class="s1">CtField ctField1 = CtField.make(</span><span class="s5">&quot;private int age;&quot;</span><span class="s0">, </span><span class="s1">ctClass)</span><span class="s0">;</span>
+
+        <span class="s1">ctClass.addField(ctField)</span><span class="s0">;</span>
+        <span class="s1">ctClass.addField(ctField1)</span><span class="s0">;</span>
+
+        <span class="s4">// 创建方法</span>
+        <span class="s1">CtMethod ctMethod = CtMethod.make(</span><span class="s5">&quot; public String getName() { return name;}&quot;</span><span class="s0">, </span><span class="s1">ctClass)</span><span class="s0">;</span>
+        <span class="s1">CtMethod ctMethod1 = CtMethod.make(</span><span class="s5">&quot; public void setAge(int age) { this.age = age;}&quot;</span><span class="s0">, </span><span class="s1">ctClass)</span><span class="s0">;</span>
+        <span class="s1">ctClass.addMethod(ctMethod)</span><span class="s0">;</span>
+        <span class="s1">ctClass.addMethod(ctMethod1)</span><span class="s0">;</span>
+
+        <span class="s4">// 添加构造器  基本数据类型和一般数据类型的get区别</span>
+        <span class="s1">CtConstructor ctConstructor = </span><span class="s0">new </span><span class="s1">CtConstructor(</span><span class="s0">new </span><span class="s1">CtClass[]{pool.get(</span><span class="s5">&quot;java.lang.String&quot;</span><span class="s1">)</span><span class="s0">, </span><span class="s1">CtClass.intType}</span><span class="s0">, </span><span class="s1">ctClass)</span><span class="s0">;</span>
+        <span class="s1">ctConstructor.setBody(</span><span class="s5">&quot;{this.name = name; this.age = age;}&quot;</span><span class="s1">)</span><span class="s0">; </span><span class="s4">// 构造器的主体</span>
+        <span class="s1">ctClass.addConstructor(ctConstructor)</span><span class="s0">; </span><span class="s4">// 添加构造器</span>
+
+        <span class="s1">ctClass.writeFile(</span><span class="s5">&quot;/Users/mcy/Desktop/cs/Java300/src/main/java/MyByteCode/&quot;</span><span class="s1">)</span><span class="s0">; </span><span class="s4">// 将上面编写好的类写入到工作空间</span>
+
+    <span class="s1">}</span>
+<span class="s1">}</span>
+
+</pre>
+</body>
+</html>

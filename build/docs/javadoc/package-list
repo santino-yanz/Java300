@@ -1,0 +1,13 @@
+Bean
+MyByteCode
+MyDynamicCompile
+MyJVM
+MyJVM.ThreadContent
+MyORM
+MyReflection
+MyScriptEngine
+MyThread
+org.example
+org.example.components
+org.example.pages
+org.example.services
